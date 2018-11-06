@@ -57,7 +57,7 @@ table.dataframe, .dataframe th, .dataframe td {
   height: 250px;
 }
 #savedPlots.selectpicker{
-  width: 300px;
+  width: 150px;
   height: 140px;
 }
 #plotButtons{
@@ -66,6 +66,20 @@ table.dataframe, .dataframe th, .dataframe td {
 .plotBtn{
   width: 200px;
   margin: 10px;
+}
+.plotDataBtn{
+  width: 200px;
+  margin: 10px;
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+.plotDataBtn:hover{
+  width: 200px;
+  margin: 10px;
+  color: #007bff;
+  background-color: #fff;
+  border-color: #007bff;
 }
 #plotName{
   width: 200px;
@@ -82,6 +96,61 @@ table.dataframe, .dataframe th, .dataframe td {
 #dataDiv{
   display:none;
 }
+.headerRow{
+  background-color: #007bff;
+  font-size: 1.2em;
+  color: white;
+  margin-bottom: 10px;
+  border-width: 3px;
+  border-style: solid;
+  border-color: white;
+  border-radius: 5px;
+}
+.filterHeaderRow{
+  background-color: #007bff;
+  font-size: 1.2em;
+  color: white;
+  border-width: 3px;
+  border-style: solid;
+  border-color: white;
+  border-radius: 5px;
+}
+.odd{
+  background-color: #8cc3ff;
+}
+.even{
+  color: black;
+}
 .filterBox{
   margin: 10px 20px;
+  height: 150px;
+  min-width: 45px;
+}
+.experiment{
+  width: 150px;
+}
+.active{
+  border-width: 2px;
+  border-style: solid;
+  border-color: black;
+  border-radius: 3px;
+}
+.clickSelect{
+  border-width: 2px;
+  border-style: solid;
+  border-color: white;
+  border-radius: 3px;
+}
+.parent{
+  position: relative;
+}
+.child{
+  position: absolute;
+  bottom: 0;
+}
+.buttonHeader{
+  width:220px;
+}
+.expHeader{
+  width:180px;
 }

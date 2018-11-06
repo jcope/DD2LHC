@@ -1,4 +1,3 @@
--f /usr/share/pip-wheels
 alembic==0.9.9
 asn1crypto==0.24.0
 backports-abc==0.5

@@ -39,8 +39,8 @@
   	<div class="col justify-content-start">
   		<h3>How this app works</h3>
   		<ul>
-  			<li>Select two or more limit samples</li>
-  			<li>Create comparison plot</li>
+  			<li>Filter the datasets and select two or more limit samples.</li>
+  			<li>Verify the parameters and click 'Plot Data'.</li>
   			<li>Download PDF for publications.</li>
 				<li>To save plots or upload datasets, please create an account.</li>
   			<li>Use XXX to cite us</li>
@@ -48,7 +48,7 @@
   	</div>
 		{% if _signedIn %}
 		<div class="col justify-content-end">
-			<h3>Upload new dataset</h3>
+			<h4>Upload new dataset</h4>
 			<form method="POST" action="/upload" enctype="multipart/form-data">
 				{{ dataset_upload.hidden_tag() }}
 				{{ dataset_upload.data_file(class="btn btn-default") }}
@@ -65,38 +65,21 @@
 </div>
 
 <div class="datainput">
-	<form method="POST" action="/dmplotter" name="dataset_selection">
-  	<div class="row justify-content-start">
-		{% if not _debug %}
-		<div style="display:none">
-		{% endif %}
-			<div class="col">
-				<h3>Select datasets to plot:</h3>
-					{{ dataset_selection.hidden_tag() }}
-					{{ dataset_selection.datasets(class="selectpicker",**{"onchange":"displayMetadata(this)"}) }}
-			</div>
-		{% if not _debug %}
-		</div>
-		{% endif %}
 
-		<div class="col justify-content-end">
-		<!-- Removed in place of filtering selection- this conditional select used to select *all* SI or SD datasets for plotting.
-			<h3>Conditionally Select Datasets:</h3>
-				{{dataset_selection.conditional_input(**{"onchange":"updateConditionalSelect(this)"}) }}
-		-->
-				<h3>Saved Plots:</h3>
-				{{ dataset_selection.hidden_tag() }}
-				{{ dataset_selection.savedPlots(class="selectpicker",**{"onchange":"selectPlots(this)"}) }}
-		</div>
+	<h4>Filter the Datasets</h4>
+	<i>Ctrl-Click to select multiple/deselect selections</i>
 
+	<div class="row filterHeaderRow" style='text-align: center;'>
+		<div class="col"><div class="expHeader">Experiment</div></div>
+		<div class="col">Spin</div>
+		<div class="col">Year</div>
+		<div class="col">Result Type</div>
+		<div class="col"><div class="buttonHeader"></div></div>
 	</div>
-	<hr>
-	<div class="row justify-content-start">
-		<div class="col">
-			<div style="display:block;">
-			<h3>Filter Datasets</h3>
 
-			<select multiple class='filterBox' onchange="updateFilter(this,'experiment')" >
+	<div class="row" style='text-align: center;'>
+		<div class="col">
+			<select multiple class='filterBox experiment' data-filterType='experiment' onchange="updateFilter()" >
 					<option>CMS</option>
 					<option>DarkSide</option>
 					<option>IceCube</option>
@@ -108,66 +91,115 @@
 					<option>XENON100</option>
 					<option>XENON1T</option>
 			</select>
-
-			<select multiple class='filterBox' onchange="updateFilter(this,'spinDependency')" >
+			</div>
+			<div class="col">
+			<select multiple class='filterBox' data-filterType='spinDependency' onchange="updateFilter()" >
 					<option>SD</option>
 					<option>SI</option>
 			</select>
-
-			<select multiple class='filterBox' onchange="updateFilter(this,'year')">
+		</div>
+		<div class="col">
+			<select multiple class='filterBox' data-filterType='year' onchange="updateFilter()">
 					<option>2018</option>
 					<option>2017</option>
 					<option>2016</option>
 		 	</select>
-
-
-			</div>
-			<a id="allDatasetsButton" href="#" class="btn btn-outline-primary plotBtn">View All</a>
-			<a id="clearAllFiltersButton" href="#" class="btn btn-outline-primary plotBtn">Clear</a>
 		</div>
-	</div>
+		<div class="col">
+			<select multiple class='filterBox' data-filterType='resultType' onchange="updateFilter()">
+					<option>Exp</option>
+			</select>
+		</div>
+			<!-- To add another filter box:
+			1) Copy/Paste above select filterBoxes
+			2) Update the data-FilterType value to match the corresponding filter in plotter.py (metadata parser)
+			3) Add matching options for the filter
+			4) Done. (Auto-magic filtering code found in main.js, no need to update).
+			-->
+		<div class="col">
+				<div id="clearAllFiltersButton" class="btn btn-outline-primary plotBtn">Clear Filters</div><br>
+				<div id="allDatasetsButton" class="btn btn-outline-primary plotBtn">View All</div>
+		</div>
+</div><!-- row -->
+
+
+		<div class='row headerRow'>
+			<div class='col'>Filename</div>
+			<div class='col-1'>Spin</div>
+			<div class='col-1'>Year</div>
+			<div class='col'>Label</div>
+			<div class='col col-5'><i>Comment</i></div>
+		</div>
 
 	<div class="row justify-content-start">
 		<div class="col" id='filterDatasets'>
 			<!-- Metadata from the filtered datasets will be displayed here. -->
 		</div>
 	</div>
-	<hr>
 
-<div class="row justify-content-start" style="margin-top:10px;">
-	<div class="col">
-		<h3>Standard Model coupling constant:</h3>
-				gSM = {{ dataset_selection.gSM_input}}<br>
-		<h3>Spin-Independent Model</h3>
-				{{dataset_selection.radio_inputSI}}
-	</div>
-	<div class="col" style='text-align:right;'>
-		<div id="parent">
-			<div id="child">
-
-				{{ dataset_selection.select(class="btn btn-outline-primary") }}
-			</div></div>
-	</div>
 </div>
-</form>
 
-	<hr>
 
-	<div class="row justify-content-start">
-		<div class="col justify-content-start">
-			<h3>Dataset Info</h3>
-				<div id='datasetInfo'>
-				</div>
+<div class="datainput">
+<h4>Plot the Datasets</h4>
+
+	<div class="row">
+		<div class="col-8">
+			<div id='datasetInfo'>
+				<!-- Metadata from the selected datasets will be displayed here. -->
+			</div>
+
 		</div>
-		<div class="col" style='text-align:right;'>
+		<div class="col" style='text-align:center;'>
 			<div id="parent">
 				<div id="child">
 
-				<a id="clearSelection" href="#" class="btn btn-outline-primary plotBtn">Clear All</a>
+				Saved Plots:<br>
+				{{ dataset_selection.hidden_tag() }}
+				{{ dataset_selection.savedPlots(class="selectpicker",**{"onchange":"selectPlots(this)"}) }}<br>
+				<div id="clearSelection" class="btn btn-outline-primary plotBtn">Clear Selected</div><br>
+				<div id="clearAllSelection" class="btn btn-outline-primary plotBtn">Clear All</div>
 			</div></div>
-		</div>
-  	</div>
+		</div> <!-- col -->
+  </div> <!-- row -->
 
+	<hr>
+
+		<div class="row justify-content-start" style="margin-top:10px;">
+			<div class="col">
+				<h4>Standard Model coupling constant:</h4>
+						gSM = {{ dataset_selection.gSM_input}}<br>
+			</div>
+			<div class="col">
+				<h4>Spin-Independent Model</h4>
+						{{dataset_selection.radio_inputSI}}
+			</div>
+			<div class="col" style='text-align:center;'>
+
+						<form method="POST" action="/dmplotter" name="dataset_selection">
+							{% if not _debug %}
+							<div style="display:none">
+							{% endif %}
+								<div class="col">
+									<h3>Select datasets to plot:</h3>
+										{{ dataset_selection.hidden_tag() }}
+										{{ dataset_selection.datasets(class="selectpicker",**{"onchange":"displayMetadata(this)"}) }}
+								</div>
+							{% if not _debug %}
+							</div>
+							{% endif %}
+							<!-- Removed in place of filtering selection- this conditional select used to select *all* SI or SD datasets for plotting.
+								<h3>Conditionally Select Datasets:</h3>
+									{{dataset_selection.conditional_input(**{"onchange":"updateConditionalSelect(this)"}) }}
+							-->
+							<div id="parent">
+								<div id="child">
+									{{ dataset_selection.select(class="btn btn-outline-primary plotDataBtn") }}
+								</div></div>
+						</form>
+
+			</div>
+		</div> <!-- row -->
 
 </div>
 
@@ -198,61 +230,62 @@
 					{% endif %}
 				</div>
 				<div class="col">
-					{% if _signedIn %}
-						<input type="text" id="plotName" name="plotName" placeholder="Plot Name"><br>
-						<a id="savePlots" href="#" class="btn btn-outline-primary plotBtn">Save Plots</a>
-					{% endif %}
-					<hr>
-					<a id="showData" href="#" class="btn btn-outline-primary plotBtn">Show Data</a>
-					<a id="downloadPDF" href="pdf.html" class="btn btn-outline-primary plotBtn">Download PDF</a>
+					<br>
+					<div class='row'>
+						<div class='col' style='font-weight:bold'>SM Coupling Constant:</div>
+						<div class='col'>gSM= {{gSM_gSM}}</div>
+					</div>
+
+					<div class='row'>
+						<div class='col' style='font-weight:bold'>Spin-Independent Model:</div>
+						<div class='col'>{{si_modifier}}</div>
+					</div>
+
+					<div class='row'>
+						<div class="col">
+							{% if _signedIn %}
+								<input type="text" id="plotName" name="plotName" placeholder="Plot Name"><br>
+								<div id="savePlots" class="btn btn-outline-primary plotBtn">Save Plots</div>
+							{% endif %}
+							<hr>
+							<div id="showData" class="btn btn-outline-primary plotBtn">Show Data</div>
+							<a id="downloadPDF" href="pdf.html" class="btn btn-outline-primary plotBtn">Download PDF</a>
+						</div>
+					</div>
+
 				</div>
+
 			</div>
 			<hr>
-	<div class="row justify-content-start" style="margin-top:5%;">
-		<div class="col">
-			<h3>Selected Datasets:</h3>
+
+
+			<div class='row headerRow'>
+		    <div class='col'>Filename</div>
+			  <div class='col'>Label</div>
+			  <div class='col-4'>Comment</div>
+			  <div class='col-3'>Reference</div>
+			  <div class='col'>Experiement</div>
+			  <div class='col-1'>Spin</div>
+			</div>
+
 			{% for data in metadata  %}
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Filename:</div>
-				<div class='col'>{{data['fileName']}}</div>
+				<div class="row {% if loop.index0 % 2 == 0%}even{% else %}odd{% endif %}">
+
+			  <div class='col'>{{data['fileName']}}</div>
+			  <div class='col'>{{data['dataLabel']}}</div>
+			  <div class='col-4'>{{data['dataComment']}}</div>
+			  <div class='col-3'>{{data['dataReference'] | safe}}</div>
+			  <div class='col'>{{data['experiment']}}</div>
+			  <div class='col-1'>{{data['spinDependency']}}</div>
 			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Label:</div>
-				<div class='col'>{{data['dataLabel']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Comment:</div>
-				<div class='col'><i>{{data['dataComment']}}</i></div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Reference:</div>
-				<div class='col'>{{data['dataReference'] | safe}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Experiment:</div>
-				<div class='col'>{{data['experiment']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Spin:</div>
-				<div class='col'>{{data['spinDependency']}}</div>
-			</div>
-			<hr>
 			{% endfor %}
-		</div>
-		<div class="col justify-content-end">
-			<h3>Selected Standard Model coupling constant:</h3>
-			<p>	gSM= {{gSM_gSM}}<br>
-			</p>
-			<h3>Spin-Independent Model</h3>
-			<p>	{{si_modifier}}<br>
-			</p>
-		</div>
+
 	</div>
 </div>
 
 <hr>
 
-		<div class="row justify-content-center" style="margin-top:5%;">
+		<div class="row" style="margin-top:5%;text-align:center">
   		<div class="col" id="dataDiv">
   			{% if data_table is defined %}
   				<h3>The data</h3>

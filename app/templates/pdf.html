@@ -77,45 +77,33 @@
 
 <div class="container" id='dm_footer' style="page-break-after:always;">
 	<div class="row" style="width:100%;">
-		<div class="col justify-content-start" style="text-align: left;">{{ user_manager.USER_APP_NAME }} v1.5 </div>
+		<div class="col justify-content-start" style="text-align: left;">{{ user_manager.USER_APP_NAME }} v2.0 b </div>
 		<div class="col justify-content-start" style="text-align: center;">Use XXX to cite.</div>
 		<div class="col justify-content-end" style="text-align: right;"> &copy; 2018 Brandeis University</div>
 	</div>
 </div>
 
 <div class="datainput">
-	<div class="row justify-content-start" style="margin-top:5%;">
-		<div class="col">
-			<h3>Selected Datasets:</h3>
-			{% for data in metadata  %}
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Filename:</div>
-				<div class='col'>{{data['fileName']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Label:</div>
-				<div class='col'>{{data['dataLabel']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Comment:</div>
-				<div class='col'>{{data['dataComment']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Reference:</div>
-				<div class='col'>{{data['dataReference'] | safe}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Experiment:</div>
-				<div class='col'>{{data['experiment']}}</div>
-			</div>
-			<div class='row'>
-				<div class='col col-3' style='font-weight:bold'>Spin:</div>
-				<div class='col'>{{data['spinDependency']}}</div>
-			</div>
-			<hr>
-			{% endfor %}
-		</div>
+	<div class='row headerRow'>
+		<div class='col'>Filename</div>
+		<div class='col'>Label</div>
+		<div class='col-4'>Comment</div>
+		<div class='col-3'>Reference</div>
+		<div class='col'>Experiement</div>
+		<div class='col-1'>Spin</div>
 	</div>
+
+	{% for data in metadata  %}
+		<div class="row {% if loop.index0 % 2 == 0%}even{% else %}odd{% endif %}">
+
+		<div class='col'>{{data['fileName']}}</div>
+		<div class='col'>{{data['dataLabel']}}</div>
+		<div class='col-4'>{{data['dataComment']}}</div>
+		<div class='col-3'>{{data['dataReference'] | safe}}</div>
+		<div class='col'>{{data['experiment']}}</div>
+		<div class='col-1'>{{data['spinDependency']}}</div>
+	</div>
+	{% endfor %}
 </div>
 
 {% endblock %}

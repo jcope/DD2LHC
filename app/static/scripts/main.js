@@ -1,5 +1,7 @@
 var spinClass;
 var bulkUpdate;
+var currentFilter= [];
+var selectedDatasets = [];
 window.onload = function() {
   bulkUpdate = false;
   var dataBtn = document.getElementById("showData");
@@ -9,6 +11,7 @@ window.onload = function() {
   var clearFilterBtn = document.getElementById("clearAllFiltersButton");
 
   var clearBtn = document.getElementById("clearSelection");
+  var clearAllBtn = document.getElementById("clearAllSelection");
 
   dataBtn.onclick = function() {
     var data = document.getElementById("dataDiv");
@@ -41,9 +44,9 @@ window.onload = function() {
     var datasetForm = document.getElementById("datasets");
     for (datasetIndex=0; datasetIndex<datasetForm.options.length; datasetIndex++) {
          //Wrap the metadata in a clickable element- take action when the dataset is selected
-         displayText += "<div class='filteredOption' onClick='selectDataset("+datasetIndex+")'>";
-         displayText += getMetadataDisplay(metadata[datasetIndex]);
-         displayText += "</div>"
+         displayText += "<div class='filteredOption' onClick='selectDataset(this,"+datasetIndex+")'>";
+         displayText += getMetadataDisplay(metadata[datasetIndex],datasetIndex);
+         displayText += "</div>";
     }
     //Updated the selectable datasets from the filtered option
     var textElement = document.getElementById('filterDatasets');
@@ -62,14 +65,28 @@ window.onload = function() {
     textElement.innerHTML = '';
   };
 
-  clearBtn.onclick = function () {
+  clearAllBtn.onclick = function () {
    var form = document.getElementById("datasets");
    for (i=0; i<form.options.length; i=i+1) {
      var meta = metadata[i];
      form.options[i].selected = false; //Deselect the selctions
    }
+   currentFilter= [];
    bulkUpdate=true;
    displayMetadata(form);
+  };
+
+  clearBtn.onclick = function () {
+    var datasetForm = document.getElementById("datasets");
+    //Deselect all 'active' classes form the form
+    var selectedSets = document.getElementsByClassName('active');
+    //Grab the index from each element in the selected sets
+    for (var i = 0; i < selectedSets.length; i++) {
+      var index = $(selectedSets[i]).attr('data-index');
+      datasetForm.options[index].selected = false; //Deselect the selctions
+    }
+    bulkUpdate=true;
+    displayMetadata(datasetForm);
   };
 
   //Update the initial metadata
@@ -81,9 +98,11 @@ function displayMetadata(form){
   checkSpinConsistency(form);
   //Generate the new metadata to display, depending if item is selected
   var displayText = "";
+  displayText = getDatasetDisplayHeader();
+  var index=0;
   for (i=0; i<form.options.length; i=i+1) {
-  if (form.options[i].selected ) {
-      displayText += getMetadataDisplay(metadata[i]);
+    if (form.options[i].selected ) {
+      displayText += getSelectedDatasetDisplay(metadata[i],i,index++);
     }
   }
   //Push the text to the html element
@@ -97,36 +116,61 @@ function displayMetadata(form){
 *  No support for multiple selection within a certain filter (ie CMS and LUX will result in CMS only)
 *  Does not clear other filter selections, so may appear as if multple selects are made.
 **/
-function updateFilter(selectFilter,filterType){
-  var displayText = "<h4>Select a Dataset:</h4>";
-  //Grab the main form that displays the dataset selection
+function updateFilter(){
+  currentFilter = [];
+  var filterFound = false;
   var datasetForm = document.getElementById("datasets");
-  for (filterIndex=0; filterIndex<selectFilter.options.length; filterIndex++) {
-      if (selectFilter.options[filterIndex].selected) {
-        //Grab the filter from the selected value
-        var filter = selectFilter.options[filterIndex].value;
-        //For each dataset option (pulled from the main selection form)
-        for (datasetIndex=0; datasetIndex<datasetForm.options.length; datasetIndex++) {
-          if(metadata[datasetIndex][filterType] == filter){
-             //Wrap the metadata in a clickable element- take action when the dataset is selected
-             displayText += "<div class='filteredOption' onClick='selectDataset("+datasetIndex+")'>";
-             displayText += getMetadataDisplay(metadata[datasetIndex]);
-             displayText += "</div>"
+  var filterBoxes = document.getElementsByClassName('filterBox');
+  for (var i=0;i<filterBoxes.length;i++){
+    var filterBox = filterBoxes[i];
+    var filterType = $(filterBox).attr('data-filterType');
+    for (var filterIndex=0; filterIndex<filterBox.options.length; filterIndex++) {
 
+      if (filterBox.options[filterIndex].selected) {
+        //Grab the filter from the selected value
+        var filter = filterBox.options[filterIndex].value;
+        //For each dataset option (pulled from the main selection form)
+        if(!filterFound){
+          for (datasetIndex=0; datasetIndex<datasetForm.options.length; datasetIndex++) {
+            if(metadata[datasetIndex][filterType] == filter){
+               currentFilter.push({'data':metadata[datasetIndex],'index':datasetIndex});
+            }
           }
         }
-      }
+        else{
+          //Filter throught the filtered
+          currentFilter = currentFilter.filter(function(dataset) {
+            return dataset.data[filterType] == filter;
+          });
+        }
+      }// if option is selected
+    }
+    //If data was filtered from this box selection, next filter option needs to filter from the filter
+    if(currentFilter.length>0){
+      filterFound = true;
+    }
   }
+
+
+  //Genrate the displayText from the (global) filtered set
+  var displayText = "";
+  for(index=0;index<currentFilter.length;index++){
+    displayText += "<div class='filteredOption' onClick='selectDataset(this,"+currentFilter[index].index+")'>";
+    displayText += getMetadataDisplay(currentFilter[index].data,index);
+    displayText += "</div>";
+  }
+
   //Updated the selectable datasets from the filtered option
   var textElement = document.getElementById('filterDatasets');
   textElement.innerHTML = displayText;
 }
-//Select/Deselect the dataset option from the main list
-function selectDataset(datasetIndex){
+
+//Select/Deselect the dataset option from the master list
+function selectDataset(element,datasetIndex){
   var datasetForm = document.getElementById("datasets");
   datasetForm.options[datasetIndex].selected = !(datasetForm.options[datasetIndex].selected);
-  //Focus the main select form, update the metadata for the options selected in the main select form
-  datasetForm.focus();
+  $(element).toggleClass('clickSelect');
+  setTimeout(function(){ $(element).toggleClass('clickSelect'); }, 100);
   displayMetadata(datasetForm);
 }
 
@@ -170,7 +214,6 @@ function alertSpinSelectError(spinClass){
   alert('Please be consistant with your spin selection.');
 }
 
-
 function selectPlots(savedSelection){
   var datasetForm = document.getElementById("datasets");
   var selected = savedSelection.options[savedSelection.selectedIndex].innerHTML;
@@ -189,45 +232,56 @@ function selectPlots(savedSelection){
   displayMetadata(datasetForm);
 }
 
-function getMetadataDisplay(metadata){
+function getHeader(){
   var displayText = "";
-  displayText += "<div class='row'>";
-  displayText += "<div class='col col-2' style='font-weight:bold'>";
-  displayText += "Filename:";
-  displayText += "</div>";
-  displayText += "<div class='col'>";
-  displayText += metadata.fileName;
-  displayText += "</div>";
+  displayText += "<div class='row headerRow'>";
+  displayText += "<div class='col'>Filename</div>";
+
+  displayText += "<div class='col-1'>Spin</div>";
+
+  displayText += "<div class='col-1'>Year</div>";
+  displayText += "<div class='col'>Label</div>";
+  displayText += "<div class='col col-5'><i>Comment</i></div>";
   displayText += "</div>";
 
-  displayText += "<div class='row'>";
-  displayText += "<div class='col col-2' style='font-weight:bold'>";
-  displayText += "Label:";
-  displayText += "</div>";
-  displayText += "<div class='col'>";
-  displayText += metadata.dataLabel;
-  displayText += "</div>";
+
+  return displayText;
+}
+function getDatasetDisplayHeader(){
+  var displayText = "";
+  displayText += "<div class='row headerRow'>";
+  displayText += "<div class='col'>Filename</div>";
+  displayText += "<div class='col'>Label</div>";
   displayText += "</div>";
 
-  displayText += "<div class='row'>";
-  displayText += "<div class='col col-2' style='font-weight:bold'>";
-  displayText += "Comment:";
-  displayText += "</div>";
-  displayText += "<div class='col'><i>";
-  displayText += metadata.dataComment;
-  displayText += "</i></div>";
-  displayText += "</div>";
 
-  displayText += "<div class='row'>";
-  displayText += "<div class='col col-2' style='font-weight:bold'>";
-  displayText += "Spin:";
+  return displayText;
+}
+function getSelectedDatasetDisplay(metadata,index,displayIndex){
+  var displayText = "";
+  var rowClass = "odd";
+  if(displayIndex%2==0){ rowClass = "even"; }
+  displayText += "<div class='row "+rowClass+"' data-index='"+index+"' onClick='selectDatasetDisplay(this)'>";
+  displayText += "<div class='col'>" + metadata.fileName + "</div>";
+  displayText += "<div class='col'>" + metadata.dataLabel + "</div>";
   displayText += "</div>";
-  displayText += "<div class='col'>";
-  displayText += metadata.spinDependency;
-  displayText += "</div>";
-  displayText += "</div>";
-  displayText += '<hr>';
+  return displayText;
+}
+function selectDatasetDisplay(e){
+  $(e).toggleClass( "active" );
+}
 
+function getMetadataDisplay(metadata,index){
+  var displayText = "";
+  var rowClass = "odd";
+  if(index%2==0){ rowClass = "even"; }
+  displayText += "<div class='row "+rowClass+"'>";
+  displayText += "<div class='col'>" + metadata.fileName + "</div>";
+  displayText += "<div class='col-1'>" + metadata.spinDependency + "</div>";
+  displayText += "<div class='col-1'>" + metadata.year + "</div>";
+  displayText += "<div class='col'>" + metadata.dataLabel + "</div>";
+  displayText += "<div class='col col-5'><i>" + metadata.dataComment + "</i></div>";
+  displayText += "</div>";
   return displayText;
 }
 
@@ -248,7 +302,7 @@ function updateConditionalSelect(conditionalSelect){
     var meta = metadata[i];
     //If this meta matches the selected input, then we select in form
     form.options[i].selected = false; //Deselect previous selction
-    if(meta['spinDependency'] === selectedInput){
+    if(meta.spinDependency === selectedInput){
       form.options[i].selected = true;
     }
   }
