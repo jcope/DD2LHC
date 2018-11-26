@@ -141,16 +141,18 @@ table.dataframe, .dataframe th, .dataframe td {
   border-color: white;
   border-radius: 3px;
 }
+.buttonHeader{
+  width:220px;
+}
+.expHeader{
+  width:180px;
+}
+
+/* Used to float a child div to the bottom */
 .parent{
   position: relative;
 }
 .child{
   position: absolute;
   bottom: 0;
-}
-.buttonHeader{
-  width:220px;
-}
-.expHeader{
-  width:180px;
 }

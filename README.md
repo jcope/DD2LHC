@@ -23,7 +23,8 @@ source activate dd2lhc
 ```
 conda install -y --file conda-requirements.txt
 pip install -r requirements.txt
-````
+pip install -r deploy/pythonanywhere/requirements.txt
+```
 #### initialize User Database:
 ```
 python manage.py init_db
@@ -59,16 +60,16 @@ Password: `Password1`
 
 While there are many files and packages used to create DM Limiter, in practice you will only need to modify the following files during maintenance development. DM Limiter is a `Flask` application built using `python`. `Javascript` is used to handle runtime logic in the browser, and `HTML` and `CSS` is used to describe the template pages used to render the UI.
 
+`app/views/mainviews.py`  Maps the web addresses to actual actions and page renderings
+
+`app/static/scripts/main.js` Web logic executed at run time (ie detect change in forms, update metadata displayed)
+
+
 `app/dmplotter/plotter.py` Business logic that reads data, applies conversions, defines plot configurations
 
 `app/dmplotter/conversions.py` **Actual conversion/theory that applies to DM research**
 
 `app/dmplotter/forms.py` Declarations for the html forms found on the main DM Limiter page
-
-
-`app/static/scripts/main.js` Web logic executed at run time (ie detect change in forms, update metadata displayed)
-
-`app/views/mainviews.py`  Maps the web addresses to actual actions and page renderings
 
 
 `app/templates/layout.html` Contains the basic layout all other pages are generated from
@@ -81,6 +82,13 @@ While there are many files and packages used to create DM Limiter, in practice y
 
 
 `app/static/css/style.css` General stylesheet for the overall layout/theme of web app
+
+### The general application flow goes something like this:
+Python is used to manange the webserver. This includes responding to requests, generating html pages, management of user authentication/login. The code to convert datasets and generate the different plots is done in the webserver via python. The request for dmplotter is handled in `app/views/mainviews.py:dmplotter()`.
+
+A 'global' HTML select box is used to determine what datasets to plot. This select box is hidden to the end user(unless DEBUG mode is set to `true`). A UI wrapper was developed around the select box to facilitate filtering and displaying dataset metadata. When the user selects a dataset to be plotted, behind the scenes javascript selects the dataset from the hidden select box and the UI is then refreshed using this updated select box. When the form is submitted, the datasets selected in the select box are used for the conversion/plotting.
+
+The functions in `app/static/scripts/main.js` respond to user events, ie button presses, filters selected, etc. This code is executed client side (on the user's device) and is responsible for most of the dataset select box wrapping and event handling.
 
 ---
 ## Deployment

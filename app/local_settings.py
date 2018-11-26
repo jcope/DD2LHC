@@ -14,7 +14,7 @@ DEBUG = False
 SECRET_KEY = '566287894cf05b610f4c52dfcd2f0974d538db9059ae37b3'
 
 # SQLAlchemy settings
-SQLALCHEMY_DATABASE_URI = 'sqlite:///../app.sqlite'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///../dmapp.sqlite'
 SQLALCHEMY_TRACK_MODIFICATIONS = False    # Avoids a SQLAlchemy Warning
 
 # Flask-Mail settings
@@ -34,5 +34,5 @@ USER_EMAIL_SENDER_NAME = 'DM Limiter App'
 USER_EMAIL_SENDER_EMAIL = 'app@dmlimiter.com'
 
 ADMINS = [
-    '"Administrator" <admin@dmlimiter.com>',
+    '"Administrator" <jcope@emmatech.us>',  #Error emails will be sent to this address(es)
     ]

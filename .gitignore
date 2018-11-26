@@ -2,3 +2,5 @@
 app.sqlite
 savedPlots.json
 .env
+
+dmapp.sqlite

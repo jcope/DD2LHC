@@ -115,7 +115,6 @@ def dmplotter():
     dataset_upload = UploadForm()
 
     global selected_datasets
-    print(selected_datasets)
 
     if request.method == 'POST':
         # check if the post request has the file part
@@ -132,7 +131,9 @@ def dmplotter():
     datasets = selected_datasets
     dfs = map(get_data, datasets)
 
-    #Filter, TODO: Apply filter to selected_datasets prior to conversion (attempt)
+    print('Using GSM=')
+    print(gu)
+    #Filter out the None
     #get_data will return a 'None' object if the selected dataset could not be converted, (bad experiement string..)
     dfs = [x for x in dfs if determine(x)]
 
@@ -223,7 +224,7 @@ def generatePDF():
     #Will re-use the previously selected values for the dataset_type
     #Optional: provide datasel file names in the POST parameters
     if request.method == 'POST':
-        print('Use this are to parse to posted datasets');
+        print('Use this are to parse for posted datasets');
 
     datasets = selected_datasets
     dfs = map(get_data, datasets)
@@ -270,16 +271,6 @@ def generatePDF():
                            si_modifier = si_modifier,
                            gSM_gSM=gu)
     return html
-'''
-    css = 'app/static/css/style.css'
-    pdf = pdfkit.from_string(html, False, css=css)
-
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = \
-                    'inline; filename=%s.pdf' % 'dd2lhc'
-    return response
-'''
 
 @main_blueprint.route('/upload', methods=['GET', 'POST'])
 @login_required

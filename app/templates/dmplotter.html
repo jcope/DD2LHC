@@ -9,11 +9,11 @@
 <script type="text/javascript">
 		//Collect all the flask variables for use in the main js script
 		var selected_datasets_js = {{selected_datasets|tojson}};
-		var metadata = [];
+		var m_datasetMetadata = [];
 		{% for data in allmetadata  %}
-		metadata.push({{data|tojson}});
+		m_datasetMetadata.push({{data|tojson}});
 		{% endfor %}
-		var plots = {{savedPlots|tojson}};
+		var m_savedPlots = {{savedPlots|tojson}};
 		var csrf = '{{ csrf_token() | safe }}';
 </script>
 <script src="{{ url_for('static', filename='scripts/main.js') }}"></script>
@@ -132,7 +132,7 @@
 		</div>
 
 	<div class="row justify-content-start">
-		<div class="col" id='filterDatasets'>
+		<div class="col" id='filteredDatasets'>
 			<!-- Metadata from the filtered datasets will be displayed here. -->
 		</div>
 	</div>
@@ -143,9 +143,17 @@
 <div class="datainput">
 <h4>Plot the Datasets</h4>
 
+
+
 	<div class="row">
 		<div class="col-8">
-			<div id='datasetInfo'>
+
+			<div class='row headerRow'>
+				<div class='col'>Filename</div>
+				<div class='col'>Label</div>
+			</div>
+
+			<div id='selectedDatasets'>
 				<!-- Metadata from the selected datasets will be displayed here. -->
 			</div>
 
@@ -156,7 +164,7 @@
 
 				Saved Plots:<br>
 				{{ dataset_selection.hidden_tag() }}
-				{{ dataset_selection.savedPlots(class="selectpicker",**{"onchange":"selectPlots(this)"}) }}<br>
+				{{ dataset_selection.savedPlots(class="selectpicker",**{"onchange":"loadSavedPlot(this)"}) }}<br>
 				<div id="clearSelection" class="btn btn-outline-primary plotBtn">Clear Selected</div><br>
 				<div id="clearAllSelection" class="btn btn-outline-primary plotBtn">Clear All</div>
 			</div></div>
@@ -164,7 +172,7 @@
   </div> <!-- row -->
 
 	<hr>
-
+		<form method="POST" action="/dmplotter" name="dataset_selection">
 		<div class="row justify-content-start" style="margin-top:10px;">
 			<div class="col">
 				<h4>Standard Model coupling constant:</h4>
@@ -176,22 +184,18 @@
 			</div>
 			<div class="col" style='text-align:center;'>
 
-						<form method="POST" action="/dmplotter" name="dataset_selection">
+
 							{% if not _debug %}
 							<div style="display:none">
 							{% endif %}
 								<div class="col">
 									<h3>Select datasets to plot:</h3>
 										{{ dataset_selection.hidden_tag() }}
-										{{ dataset_selection.datasets(class="selectpicker",**{"onchange":"displayMetadata(this)"}) }}
+										{{ dataset_selection.datasets(class="selectpicker",**{"onchange":"updateSelectedDatasets()"}) }}
 								</div>
 							{% if not _debug %}
 							</div>
 							{% endif %}
-							<!-- Removed in place of filtering selection- this conditional select used to select *all* SI or SD datasets for plotting.
-								<h3>Conditionally Select Datasets:</h3>
-									{{dataset_selection.conditional_input(**{"onchange":"updateConditionalSelect(this)"}) }}
-							-->
 							<div id="parent">
 								<div id="child">
 									{{ dataset_selection.select(class="btn btn-outline-primary plotDataBtn") }}
